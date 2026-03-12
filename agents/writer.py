@@ -1,11 +1,6 @@
-from langchain_ollama import ChatOllama
-
-from app.constants import OLLAMA_MODEL
-
-llm = ChatOllama(model=OLLAMA_MODEL)
+from llm import chat_llm
 
 def writer_agent(state):
-
     question = state["question"]
     docs = state["documents"]
     search_results = state["search_results"]
@@ -22,7 +17,7 @@ def writer_agent(state):
     {context}
     """
 
-    response = llm.invoke(prompt)
+    response = chat_llm.invoke(prompt)
 
     return {
         "final_answer": response.content

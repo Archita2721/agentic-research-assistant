@@ -1,9 +1,6 @@
 from langchain_community.vectorstores import FAISS
-from langchain_ollama import OllamaEmbeddings
 
-from app.constants import OLLAMA_EMBEDDINGS_MODEL
-
-embedding = OllamaEmbeddings(model=OLLAMA_EMBEDDINGS_MODEL)
+from llm import embeddings
 
 vectorstore = None
 
@@ -14,7 +11,7 @@ def create_vectorstore(docs):
 
     vectorstore = FAISS.from_documents(
         docs,
-        embedding
+        embeddings
     )
 
     return vectorstore

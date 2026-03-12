@@ -2,8 +2,6 @@ import os
 
 from dotenv import load_dotenv
 
-# Load local environment variables from `.env` if present.
-# Kept here so any module importing constants gets env loaded first.
 load_dotenv()
 
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3")
