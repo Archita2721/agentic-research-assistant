@@ -20,4 +20,9 @@ env/
 .DS_Store
 Thumbs.db
 
-temp_AI_PDF.pdf
+# Uploaded documents (keep the folder structure, ignore contents)
+documents/**
+!documents/.gitkeep
+
+# Temporary files
+temp_*
