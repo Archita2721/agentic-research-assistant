@@ -21,17 +21,7 @@ The system allows users to upload documents, store them in a vector database, an
 
 ## Architecture
 
-User Query
-↓
-FastAPI API
-↓
-LangGraph Agent Workflow
-↓
-Retriever (FAISS Vector DB)
-↓
-Ollama LLM
-↓
-Final Answer
+User Query -> FastAPI API -> LangGraph Agent Workflow -> Retriever (FAISS Vector DB) -> Ollama LLM -> Final Answer
 
 ---
 
@@ -80,8 +70,7 @@ state.py
 Clone the repository
 
 ```
-git clone https://github.com/yourusername/agentic-research-assistant.git
-cd agentic-research-assistant
+git clone https://github.com/Archita2721/agentic-research-assistant.git
 ```
 
 Create a virtual environment
@@ -131,9 +120,9 @@ POST /ask
 
 Example request:
 
-```
+```json
 {
- "question": "Summarize the document"
+  "question": "Summarize the document"
 }
 ```
 
