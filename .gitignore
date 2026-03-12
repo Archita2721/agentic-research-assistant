@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+agents/__pycache__
+app/__pycache__
+tools/__pycache__
+vectorstore/__pycache__
+
+# Virtual environments
+env/
+.venv/
+
+# Local env vars
+.env
+.env.*
+!.env.example
+
+# OS/editor
+.DS_Store
+Thumbs.db
+
+temp_AI_PDF.pdf
