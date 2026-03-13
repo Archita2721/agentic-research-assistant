@@ -50,13 +50,18 @@ See `.env.example` for the full list. Common ones:
 * `OLLAMA_MODEL`, `OLLAMA_EMBEDDINGS_MODEL`
 * `TEXT_SPLITTER_CHUNK_SIZE`, `TEXT_SPLITTER_CHUNK_OVERLAP`
 * `DOCUMENTS_DIR`
+* `MONGODB_URI`, `MONGODB_DB_NAME`
 * `ENABLE_WEB_SEARCH`
 
 ## API
 
 ### `POST /upload`
 
-Uploads a file and indexes it.
+Uploads a file and indexes it. The server uses a **cookie-based session** and will set a `session_id` cookie if one does not exist yet.
+
+Notes:
+- The request does **not** accept `session_id` (it comes only from the cookie).
+- The response does **not** expose `doc_id` (document selection is internal and session-scoped).
 
 ### `POST /ask`
 
@@ -65,6 +70,27 @@ Request:
 ```json
 { "question": "Summarize the document" }
 ```
+
+Session behavior:
+- The server reads `session_id` from `Cookie: session_id=...`.
+- If missing, the server generates one and sets `Set-Cookie: session_id=...`.
+- Browsers (Swagger UI) send cookies automatically on subsequent requests.
+- For `curl`, use a cookie jar so the session persists:
+
+```bash
+curl -c cookies.txt -b cookies.txt -F "file=@documents/example.pdf" http://127.0.0.1:8000/upload
+curl -c cookies.txt -b cookies.txt -H "Content-Type: application/json" -d "{\"question\":\"Summarize the document\"}" http://127.0.0.1:8000/ask
+```
+
+Document selection:
+- The app automatically uses the **latest uploaded document for the current session**.
+- It never falls back to a "latest document overall" (prevents cross-session data leakage).
+
+How routing works:
+
+- **Memory questions** (e.g. "what did I ask earlier") are answered from MongoDB chat history and **do not** run RAG.
+- **Smalltalk** (hi/thanks/wassup) bypasses RAG and replies directly via the LLM with suggestions.
+- **Research** questions run retrieval (BM25 + FAISS when available) and then writer + self-critic.
 
 All JSON endpoints follow the same response shape:
 
@@ -82,7 +108,7 @@ All JSON endpoints follow the same response shape:
 
 Streams `text/event-stream` events:
 
-* `status` (`router`, `smalltalk`, `planner`, `web_search`, `retrieve`, `writer`, `critic`)
+* `status` (`router`, `smalltalk`, `memory`, `planner`, `web_search`, `retrieve`, `writer`, `critic`)
 * `timing`
 * `token`
 * `final` (same shape as `POST /ask` via `api_ok(...)`)

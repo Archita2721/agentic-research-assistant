@@ -22,9 +22,12 @@ class ApiResponse(BaseModel):
 
 
 class UploadData(BaseModel):
-    doc_id: str
     stored_filename: str
     dense_indexing: str
+    job_id: str | None = None
+    original_filename: str | None = None
+    content_type: str | None = None
+    extension: str | None = None
 
 
 class AskData(BaseModel):
