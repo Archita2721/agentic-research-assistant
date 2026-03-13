@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 from threading import RLock
 import time
 
@@ -7,6 +8,7 @@ from langchain_community.vectorstores import FAISS
 from langchain_community.retrievers import BM25Retriever
 from langchain_core.documents import Document
 
+from constants import BOOTSTRAP_DENSE_FROM_DISK, BOOTSTRAP_SPARSE_FROM_MONGO, FAISS_PERSIST_DIR
 from llm import embeddings
 
 _lock = RLock()
@@ -15,6 +17,16 @@ vectorstore: FAISS | None = None
 _all_chunks: list[Document] = []
 _bm25: BM25Retriever | None = None
 _dense_jobs = 0
+
+
+def _persist_faiss() -> None:
+    if vectorstore is None:
+        return
+    path = Path(FAISS_PERSIST_DIR)
+    path.mkdir(parents=True, exist_ok=True)
+    start = time.perf_counter()
+    vectorstore.save_local(str(path))
+    print(f"[timing] faiss.save_local {(time.perf_counter() - start):.3f}s path={path}", flush=True)
 
 
 def add_documents_sparse(docs: list[Document]) -> None:
@@ -45,6 +57,8 @@ def add_documents_dense(docs: list[Document]) -> None:
                 vectorstore = shard
             else:
                 vectorstore.merge_from(shard)
+
+            _persist_faiss()
     finally:
         with _lock:
             _dense_jobs -= 1
@@ -113,3 +127,41 @@ def hybrid_retrieve(question: str, *, k_dense: int = 4, k_sparse: int = 6) -> li
         seen.add(key)
         deduped.append(doc)
     return deduped
+
+
+def bootstrap_indexes() -> None:
+    global vectorstore, _bm25, _all_chunks
+
+    if BOOTSTRAP_DENSE_FROM_DISK:
+        path = Path(FAISS_PERSIST_DIR)
+        if path.exists():
+            try:
+                start = time.perf_counter()
+                vectorstore = FAISS.load_local(
+                    str(path),
+                    embeddings,
+                    allow_dangerous_deserialization=True,
+                )
+                print(f"[timing] faiss.load_local {(time.perf_counter() - start):.3f}s path={path}", flush=True)
+            except Exception as exc:
+                print(f"[warn] faiss.load_local failed: {exc}", flush=True)
+
+    if BOOTSTRAP_SPARSE_FROM_MONGO:
+        try:
+            from app.mongo import chunks_collection  # local import
+
+            start = time.perf_counter()
+            rows = list(chunks_collection().find({}, {"_id": 0, "text": 1, "metadata": 1}))
+            docs: list[Document] = []
+            for row in rows:
+                docs.append(Document(page_content=row.get("text", ""), metadata=row.get("metadata") or {}))
+
+            with _lock:
+                _all_chunks = docs
+                if _all_chunks:
+                    _bm25 = BM25Retriever.from_documents(_all_chunks)
+                    _bm25.k = 6
+
+            print(f"[timing] bm25.bootstrap {(time.perf_counter() - start):.3f}s chunks={len(docs)}", flush=True)
+        except Exception as exc:
+            print(f"[warn] bm25.bootstrap failed: {exc}", flush=True)

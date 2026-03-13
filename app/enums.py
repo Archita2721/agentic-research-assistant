@@ -3,11 +3,13 @@ from enum import Enum
 
 class Route(str, Enum):
     SMALLTALK = "smalltalk"
+    MEMORY = "memory"
     RESEARCH = "research"
 
 
 class Intent(str, Enum):
     SMALLTALK = "smalltalk"
+    MEMORY = "memory"
     RESEARCH = "research"
 
 
@@ -34,6 +36,7 @@ class SSEEvent(str, Enum):
 class Step(str, Enum):
     ROUTER = "router"
     SMALLTALK = "smalltalk"
+    MEMORY = "memory"
     PLANNER = "planner"
     WEB_SEARCH = "web_search"
     RETRIEVE = "retrieve"

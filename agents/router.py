@@ -1,7 +1,12 @@
 import re
 
 from app.enums import Intent, Route
-from constants import SMALLTALK_GREETING_FIRST, SMALLTALK_GREETING_PHRASES, SMALLTALK_THANKS_FIRST
+from constants import (
+    MEMORY_INTENT_PHRASES,
+    SMALLTALK_GREETING_FIRST,
+    SMALLTALK_GREETING_PHRASES,
+    SMALLTALK_THANKS_FIRST,
+)
 
 def router_agent(state):
     question = (state.get("question") or "").strip()
@@ -15,6 +20,10 @@ def router_agent(state):
 
     cleaned = re.sub(r"[^a-z0-9\s']+", "", normalized)
     tokens = [t for t in cleaned.split() if t]
+
+    # Memory / conversation-history intent (should NOT run RAG)
+    if cleaned in MEMORY_INTENT_PHRASES:
+        return {"route": Route.MEMORY.value, "intent": Intent.MEMORY.value}
 
     is_smalltalk = False
     if cleaned in SMALLTALK_GREETING_PHRASES:

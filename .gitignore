@@ -26,3 +26,6 @@ documents/**
 
 # Temporary files
 temp_*
+
+# Local vectorstore persistence
+vectorstore_data/**
