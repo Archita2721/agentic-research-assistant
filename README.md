@@ -1,131 +1,103 @@
 # Agentic Research Assistant
 
-An **Agentic AI system** that performs research over documents using RAG and agent workflows.
+An agentic AI system that answers questions over your uploaded files using RAG + agent workflows (FastAPI + LangGraph + Ollama).
 
-This project demonstrates how to build an AI agent backend using **LangGraph**, **FastAPI**, and **Ollama**.
+## How It Works
 
-The system allows users to upload documents, store them in a vector database, and query them using an AI-powered research agent.
+1. **Upload**: You upload a document to `POST /upload`. The file is saved under `documents/` with a UUID prefix for uniqueness.
+2. **Load + Split**: The server loads the file (PDF/TXT/MD/CSV/Excel/DOCX) and splits it into chunks. Each chunk includes metadata like `doc_id`, filenames, and `chunk_id`.
+3. **Index (Multi-document KB)**:
+   - **BM25 (fast)** is built immediately so questions can be answered right away.
+   - **FAISS (dense embeddings)** is built/updated in the background and merged when ready.
+4. **Ask**: You call `POST /ask` (or stream via `POST /ask/stream`).
+5. **Intent Routing**:
+   - **Smalltalk** (hi/thanks/wassup) bypasses retrieval and responds directly via the LLM with suggestions.
+   - **Research** queries run retrieval (hybrid BM25 + FAISS when available).
+6. **Answer + Self-Critic**: The writer drafts an answer from the retrieved context, then a self-critic agent reviews it and outputs the final answer.
 
 ## Features
 
-* Document upload and indexing
-* Retrieval-Augmented Generation (RAG)
-* Agent workflows using LangGraph
-* Local LLM inference using Ollama
-* Vector search using FAISS
-* FastAPI backend
+* Multi-document knowledge base (incremental indexing)
+* Hybrid retrieval (BM25 + FAISS when ready)
+* Intent routing (smalltalk bypasses RAG)
+* Streaming answers via SSE (`/ask/stream`)
 
-## Architecture
+## Supported Upload Types
 
-User Query -> FastAPI API -> LangGraph Agent Workflow -> Retriever (FAISS Vector DB) -> Ollama LLM -> Final Answer
+`pdf`, `txt`, `md/markdown`, `csv`, `xls`, `xlsx`, `docx`
 
----
+Uploads are stored under `documents/` (ignored by git).
 
-## Tech Stack
+## Quickstart
 
-* Python
-* FastAPI
-* LangGraph
-* LangChain
-* Ollama
-* FAISS
-* Pydantic
-
-## Project Structure
-
-```
-agentic-research-assistant/
-│
-├─ main.py
-├─ requirements.txt
-│
-├─ agents/
-│   ├─ planner.py
-│   └─ writer.py
-│
-├─ tools/
-│   ├─ search_tool.py
-│   ├─ rag_tool.py
-│   ├─ document_loader.py
-│   └─ text_splitter.py
-│
-├─ vectorstore/
-│   └─ faiss_store.py
-│
-└─ app/
-    ├─ graph.py
-    └─ state.py
-```
-
-## Installation
-
-Clone the repository:
-
-```
-git clone https://github.com/Archita2721/agentic-research-assistant.git
-```
-
-Create a virtual environment:
-
-```bash
-python -m venv env
-source env/bin/activate  # On Windows use `env\Scripts\activate`
-```
-
-Install dependencies:
+Create `.env` from `.env.example`, then:
 
 ```bash
 pip install -r requirements.txt
-```
-
-## Run the API
-
-```bash
 uvicorn main:app --reload
 ```
 
-Open API docs in your browser:
+Open docs:
 
 ```
 http://127.0.0.1:8000/docs
 ```
 
-## API Endpoints
+## Environment Variables
 
-### Upload Document
+See `.env.example` for the full list. Common ones:
 
-```
-POST /upload
-```
+* `OLLAMA_MODEL`, `OLLAMA_EMBEDDINGS_MODEL`
+* `TEXT_SPLITTER_CHUNK_SIZE`, `TEXT_SPLITTER_CHUNK_OVERLAP`
+* `DOCUMENTS_DIR`
+* `ENABLE_WEB_SEARCH`
 
-Upload a PDF file to index it in the vector database.
+## API
 
-### Ask Question
+### `POST /upload`
 
-```
-POST /ask
-```
+Uploads a file and indexes it.
 
-Example request:
+### `POST /ask`
+
+Request:
 
 ```json
+{ "question": "Summarize the document" }
+```
+
+All JSON endpoints follow the same response shape:
+
 ```json
 {
-  "question": "Summarize the document"
-  "question": "Summarize the document"
+  "ok": true,
+  "message": null,
+  "data": { "answer": "...", "critique": "...", "intent": "research" },
+  "error": null,
+  "meta": null
 }
 ```
 
-## Future Improvements
+### `POST /ask/stream` (SSE)
 
-* Multi-document knowledge base
-* Tool routing agents
-* Self-reflection agents
-* Streaming responses
-* Conversation memory
-* Research report generation
+Streams `text/event-stream` events:
 
-## Goal
+* `status` (`router`, `smalltalk`, `planner`, `web_search`, `retrieve`, `writer`, `critic`)
+* `timing`
+* `token`
+* `final` (same shape as `POST /ask` via `api_ok(...)`)
+* `done`
 
-This project explores **Agentic AI architectures** and demonstrates how to build intelligent research assistants using modern LLM frameworks.
+## Project Structure
 
+```
+main.py
+constants.py
+llm.py
+
+app/
+agents/
+tools/
+vectorstore/
+documents/
+```

@@ -13,6 +13,7 @@ TEXT_SPLITTER_CHUNK_SIZE = int(os.getenv("TEXT_SPLITTER_CHUNK_SIZE", "500"))
 TEXT_SPLITTER_CHUNK_OVERLAP = int(os.getenv("TEXT_SPLITTER_CHUNK_OVERLAP", "50"))
 
 DOCUMENTS_DIR = os.getenv("DOCUMENTS_DIR", "documents/uploads")
+API_VERSION = os.getenv("API_VERSION", "1")
 
 # Speed/latency controls
 ENABLE_WEB_SEARCH = os.getenv("ENABLE_WEB_SEARCH", "0").strip().lower() in {"1", "true", "yes", "y"}

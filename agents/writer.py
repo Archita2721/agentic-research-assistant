@@ -2,15 +2,11 @@ import time
 
 from llm import chat_llm
 
-def writer_agent(state):
-    start = time.perf_counter()
-    question = state["question"]
-    docs = state.get("documents", [])
-    search_results = state.get("search_results", [])
 
+def build_writer_prompt(question: str, docs: list[str], search_results: list[str]) -> str:
     context = "\n".join(docs) + "\n" + "\n".join(search_results)
 
-    prompt = f"""
+    return f"""
     Answer the question using the context below. Be concise and direct.
 
     Question:
@@ -19,6 +15,15 @@ def writer_agent(state):
     Context:
     {context}
     """
+
+
+def writer_agent(state):
+    start = time.perf_counter()
+    question = state["question"]
+    docs = state.get("documents", [])
+    search_results = state.get("search_results", [])
+    prompt = build_writer_prompt(question, docs, search_results)
+    context = "\n".join(docs) + "\n" + "\n".join(search_results)
 
     if not context.strip():
         return {"final_answer": "No documents are indexed yet. Upload a document first."}
