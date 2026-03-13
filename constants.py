@@ -23,3 +23,8 @@ RETRIEVER_K_SPARSE = int(os.getenv("RETRIEVER_K_SPARSE", "4"))
 
 MAX_CHUNK_CHARS = int(os.getenv("MAX_CHUNK_CHARS", "1200"))
 MAX_TOTAL_CONTEXT_CHARS = int(os.getenv("MAX_TOTAL_CONTEXT_CHARS", "4000"))
+
+# Intent / smalltalk detection
+SMALLTALK_GREETING_FIRST = {"hi", "hello", "hey", "yo", "sup", "wassup"}
+SMALLTALK_THANKS_FIRST = {"thanks", "thank", "thx"}
+SMALLTALK_GREETING_PHRASES = {"whats up", "what's up", "thank you"}

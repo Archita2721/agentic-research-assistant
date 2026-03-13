@@ -1,6 +1,7 @@
 import re
 
 from app.enums import Intent, Route
+from constants import SMALLTALK_GREETING_FIRST, SMALLTALK_GREETING_PHRASES, SMALLTALK_THANKS_FIRST
 
 def router_agent(state):
     question = (state.get("question") or "").strip()
@@ -15,16 +16,12 @@ def router_agent(state):
     cleaned = re.sub(r"[^a-z0-9\s']+", "", normalized)
     tokens = [t for t in cleaned.split() if t]
 
-    greeting_first = {"hi", "hello", "hey", "yo", "sup", "wassup"}
-    thanks_first = {"thanks", "thank", "thx"}
-    greeting_phrases = {"whats up", "what's up", "thank you"}
-
     is_smalltalk = False
-    if cleaned in greeting_phrases:
+    if cleaned in SMALLTALK_GREETING_PHRASES:
         is_smalltalk = True
-    elif tokens and tokens[0] in greeting_first and len(tokens) <= 3:
+    elif tokens and tokens[0] in SMALLTALK_GREETING_FIRST and len(tokens) <= 3:
         is_smalltalk = True
-    elif tokens and tokens[0] in thanks_first and len(tokens) <= 4:
+    elif tokens and tokens[0] in SMALLTALK_THANKS_FIRST and len(tokens) <= 4:
         is_smalltalk = True
     elif len(cleaned) <= 3:
         is_smalltalk = True

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import csv
-from enum import Enum
 from pathlib import Path
 from typing import Iterable
 
@@ -9,15 +8,7 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_community.document_loaders.word_document import Docx2txtLoader
 from langchain_core.documents import Document
 
-class SupportedExtension(str, Enum):
-    PDF = ".pdf"
-    TXT = ".txt"
-    MARKDOWN = ".md"
-    MARKDOWN_ALT = ".markdown"
-    CSV = ".csv"
-    XLS = ".xls"
-    XLSX = ".xlsx"
-    DOCX = ".docx"
+from app.enums import SupportedExtension
 
 
 SUPPORTED_EXTENSIONS = {extension.value for extension in SupportedExtension}

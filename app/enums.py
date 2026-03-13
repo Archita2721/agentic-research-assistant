@@ -11,6 +11,17 @@ class Intent(str, Enum):
     RESEARCH = "research"
 
 
+class SupportedExtension(str, Enum):
+    PDF = ".pdf"
+    TXT = ".txt"
+    MARKDOWN = ".md"
+    MARKDOWN_ALT = ".markdown"
+    CSV = ".csv"
+    XLS = ".xls"
+    XLSX = ".xlsx"
+    DOCX = ".docx"
+
+
 class SSEEvent(str, Enum):
     STATUS = "status"
     TIMING = "timing"
@@ -28,4 +39,3 @@ class Step(str, Enum):
     RETRIEVE = "retrieve"
     WRITER = "writer"
     CRITIC = "critic"
-
