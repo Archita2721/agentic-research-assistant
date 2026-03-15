@@ -1,6 +1,7 @@
 import time
 
 from llm import chat_llm
+from app.utils import build_previews
 
 
 def build_writer_prompt(
@@ -49,10 +50,7 @@ def writer_agent(state):
         return {"final_answer": "No documents are indexed yet. Upload a document first."}
 
     # Debug: show what context is actually being sent to the LLM.
-    previews = []
-    for i, text in enumerate(docs[:6]):
-        t = (text or "").replace("\n", " ").strip()
-        previews.append(f"{i}: {t[:220]}")
+    previews = build_previews(docs)
     print(
         f"[debug] writer.context question={question!r} chunks={len(docs)} context_chars={len(context)} preview={previews}",
         flush=True,

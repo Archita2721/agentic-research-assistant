@@ -13,7 +13,7 @@ from app.graph import build_graph
 from app.mongo import chunks_collection, jobs_collection, uploads_collection
 from app.memory import append_message, fetch_recent_messages
 from app.schemas import AskData, Query, UploadData
-from app.utils import api_error, api_ok, sanitize_filename, sse
+from app.utils import api_error, api_ok, build_previews, sanitize_filename, sse
 from agents.router import router_agent
 from agents.planner import planner_agent
 from agents.critic import critic_agent
@@ -282,10 +282,7 @@ def ask_question_stream(query: Query, request: Request):
         # Debug: show what context is actually being sent to the streaming writer prompt.
         docs = state.get("documents", [])
         context = "\n".join(docs) + "\n" + "\n".join(state.get("search_results", []))
-        previews = []
-        for i, text in enumerate(docs[:6]):
-            t = (text or "").replace("\n", " ").strip()
-            previews.append(f"{i}: {t[:220]}")
+        previews = build_previews(docs)
         print(
             f"[debug] stream.writer.context question={state.get('question', '')!r} chunks={len(docs)} context_chars={len(context)} preview={previews}",
             flush=True,

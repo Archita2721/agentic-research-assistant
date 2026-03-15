@@ -34,8 +34,10 @@ Create `.env` from `.env.example`, then:
 
 ```bash
 pip install -r requirements.txt
-uvicorn main:app --reload
+uvicorn app.main:app --reload
 ```
+
+(`uvicorn main:app --reload` also works for backwards-compatibility.)
 
 Open docs:
 

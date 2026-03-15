@@ -1,6 +1,8 @@
 import time
 
 from llm import chat_llm
+from constants import GENERIC_DOC_QUESTION_PHRASES
+from app.utils import build_previews
 
 
 def _is_generic_doc_question(question: str) -> bool:
@@ -8,22 +10,7 @@ def _is_generic_doc_question(question: str) -> bool:
     if not q:
         return True
 
-    generic = {
-        "summarize",
-        "summary",
-        "summarize the document",
-        "summarise the document",
-        "tell me about the document",
-        "tell me about document",
-        "what is mentioned",
-        "what is mentioned in the document",
-        "what does the document say",
-        "what's in the document",
-        "whats in the document",
-        "overview",
-        "give an overview",
-    }
-    if q in generic:
+    if q in GENERIC_DOC_QUESTION_PHRASES:
         return True
 
     if len(q) <= 10 and "document" in q:
@@ -44,10 +31,7 @@ def critic_agent(state):
     context = "\n".join(docs) + "\n" + "\n".join(search_results)
 
     # Debug: show what context the critic sees (helps catch "Not found..." mistakes).
-    previews = []
-    for i, text in enumerate(docs[:6]):
-        t = (text or "").replace("\n", " ").strip()
-        previews.append(f"{i}: {t[:220]}")
+    previews = build_previews(docs)
     print(
         f"[debug] critic.context question={question!r} chunks={len(docs)} context_chars={len(context)} preview={previews}",
         flush=True,

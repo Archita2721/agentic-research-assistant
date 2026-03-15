@@ -12,6 +12,14 @@ def sanitize_filename(filename: str) -> str:
     return filename or "upload"
 
 
+def build_previews(texts: list[str], *, max_items: int = 6, max_chars: int = 220) -> list[str]:
+    previews: list[str] = []
+    for i, text in enumerate(texts[:max_items]):
+        t = (text or "").replace("\n", " ").strip()
+        previews.append(f"{i}: {t[:max_chars]}")
+    return previews
+
+
 def sse(event: str, data: dict) -> str:
     payload = json.dumps(data, ensure_ascii=False)
     return f"event: {event}\ndata: {payload}\n\n"
@@ -38,4 +46,3 @@ def api_error(
             "meta": None,
         },
     )
-

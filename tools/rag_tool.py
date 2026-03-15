@@ -1,8 +1,9 @@
 import time
 
-from constants import MAX_CHUNK_CHARS, MAX_TOTAL_CONTEXT_CHARS, RETRIEVER_K_SPARSE
+from constants import GENERIC_DOC_QUESTION_PHRASES, MAX_CHUNK_CHARS, MAX_TOTAL_CONTEXT_CHARS, RETRIEVER_K_SPARSE
 from langchain_community.retrievers import BM25Retriever
 from langchain_core.documents import Document
+from app.utils import build_previews
 
 
 def _clip(text: str, limit: int) -> str:
@@ -16,22 +17,7 @@ def _is_generic_doc_question(question: str) -> bool:
     if not q:
         return True
 
-    generic = {
-        "summarize",
-        "summary",
-        "summarize the document",
-        "summarise the document",
-        "tell me about the document",
-        "tell me about document",
-        "what is mentioned",
-        "what is mentioned in the document",
-        "what does the document say",
-        "what's in the document",
-        "whats in the document",
-        "overview",
-        "give an overview",
-    }
-    if q in generic:
+    if q in GENERIC_DOC_QUESTION_PHRASES:
         return True
 
     if len(q) <= 10 and "document" in q:
@@ -103,10 +89,7 @@ def rag_agent(state):
                 total += len(clipped)
 
             print(f"[timing] rag.context chunks_used={len(clipped_texts)} chars={total}", flush=True)
-            previews = []
-            for i, text in enumerate(clipped_texts[:6]):
-                t = (text or "").replace("\n", " ").strip()
-                previews.append(f"{i}: {t[:220]}")
+            previews = build_previews(clipped_texts)
             print(f"[debug] rag.context_preview chunks={len(clipped_texts)} preview={previews}", flush=True)
             for i, text in enumerate(clipped_texts):
                 print(f"[debug] rag.context_chunk i={i} chars={len(text or '')} text={text}", flush=True)
@@ -130,10 +113,7 @@ def rag_agent(state):
                 total += len(clipped)
 
             print(f"[timing] rag.context chunks_used={len(clipped_texts)} chars={total}", flush=True)
-            previews = []
-            for i, text in enumerate(clipped_texts[:6]):
-                t = (text or "").replace("\n", " ").strip()
-                previews.append(f"{i}: {t[:220]}")
+            previews = build_previews(clipped_texts)
             print(f"[debug] rag.context_preview chunks={len(clipped_texts)} preview={previews}", flush=True)
             for i, text in enumerate(clipped_texts):
                 print(f"[debug] rag.context_chunk i={i} chars={len(text or '')} text={text}", flush=True)
