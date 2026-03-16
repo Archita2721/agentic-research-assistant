@@ -25,7 +25,7 @@ from tools.text_splitter import split_documents
 from tools.rag_tool import rag_agent
 from jobs.dense_indexing import run_dense_indexing_job
 from vectorstore.faiss_store import add_documents_sparse
-from constants import ENABLE_WEB_SEARCH
+from constants import CHAT_ROLE_ASSISTANT, CHAT_ROLE_USER, ENABLE_WEB_SEARCH
 
 router = APIRouter()
 graph = build_graph()
@@ -168,8 +168,8 @@ def ask_question(query: Query, request: Request, response: Response):
         )
         print(f"[timing] ask.total {(time.perf_counter() - start):.3f}s", flush=True)
 
-        append_message(session_id, "user", query.question, intent=result.get("intent"))
-        append_message(session_id, "assistant", result.get("final_answer", ""), intent=result.get("intent"))
+        append_message(session_id, CHAT_ROLE_USER, query.question, intent=result.get("intent"))
+        append_message(session_id, CHAT_ROLE_ASSISTANT, result.get("final_answer", ""), intent=result.get("intent"))
 
         response.set_cookie("session_id", session_id, httponly=True, samesite="lax")
 
@@ -209,8 +209,8 @@ def ask_question_stream(query: Query, request: Request):
             yield sse(SSEEvent.STATUS.value, {"step": Step.MEMORY.value, "message": "Answering from conversation memory"})
             state.update(memory_agent(state))
 
-            append_message(session_id, "user", state.get("question", ""), intent=state.get("intent"))
-            append_message(session_id, "assistant", state.get("final_answer", ""), intent=state.get("intent"))
+            append_message(session_id, CHAT_ROLE_USER, state.get("question", ""), intent=state.get("intent"))
+            append_message(session_id, CHAT_ROLE_ASSISTANT, state.get("final_answer", ""), intent=state.get("intent"))
 
             yield sse(
                 SSEEvent.FINAL.value,
@@ -241,8 +241,8 @@ def ask_question_stream(query: Query, request: Request):
             state["final_answer"] = reply.strip()
             yield sse(SSEEvent.TIMING.value, {"step": Step.SMALLTALK.value, "elapsed_s": round(time.perf_counter() - st_start, 3)})
 
-            append_message(session_id, "user", state.get("question", ""), intent=state.get("intent"))
-            append_message(session_id, "assistant", state.get("final_answer", ""), intent=state.get("intent"))
+            append_message(session_id, CHAT_ROLE_USER, state.get("question", ""), intent=state.get("intent"))
+            append_message(session_id, CHAT_ROLE_ASSISTANT, state.get("final_answer", ""), intent=state.get("intent"))
 
             yield sse(
                 SSEEvent.FINAL.value,
@@ -307,8 +307,8 @@ def ask_question_stream(query: Query, request: Request):
         state.update(critic_agent(state))
         yield sse(SSEEvent.TIMING.value, {"step": Step.CRITIC.value, "elapsed_s": round(time.perf_counter() - critic_start, 3)})
 
-        append_message(session_id, "user", state.get("question", ""), intent=state.get("intent"))
-        append_message(session_id, "assistant", state.get("final_answer", ""), intent=state.get("intent"))
+        append_message(session_id, CHAT_ROLE_USER, state.get("question", ""), intent=state.get("intent"))
+        append_message(session_id, CHAT_ROLE_ASSISTANT, state.get("final_answer", ""), intent=state.get("intent"))
 
         yield sse(
             SSEEvent.FINAL.value,

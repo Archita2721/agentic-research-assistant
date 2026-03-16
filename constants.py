@@ -110,3 +110,7 @@ QUESTION_KEYWORD_STOPWORDS = {
     "you",
     "your",
 }
+
+# Chat roles (stored in MongoDB `messages`)
+CHAT_ROLE_USER = "user"
+CHAT_ROLE_ASSISTANT = "assistant"

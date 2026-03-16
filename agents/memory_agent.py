@@ -1,7 +1,9 @@
+from constants import CHAT_ROLE_USER
+
 def memory_agent(state):
     history = state.get("chat_history", []) or []
 
-    user_msgs = [m.get("content", "") for m in history if m.get("role") == "user" and m.get("content")]
+    user_msgs = [m.get("content", "") for m in history if m.get("role") == CHAT_ROLE_USER and m.get("content")]
     if not user_msgs:
         return {"final_answer": "I don't have any earlier messages for this session yet."}
 
